@@ -1,0 +1,8 @@
+# Ignore the executable file
+fistr
+
+# Ignore the temp files
+temp
+
+# Ignore the temp files
+*~
