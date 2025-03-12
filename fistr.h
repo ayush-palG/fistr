@@ -29,8 +29,11 @@ size_t int_len(int num);
 Fistr int_as_fistr(int num);
 Fistr double_as_fistr(double num);
 
-size_t remove_leading_zeros_from_fistr(Fistr *fistr);
+void remove_leading_zeros_from_fistr(Fistr *fistr);
 void add_leading_zeros_to_fistr(Fistr *fistr, size_t num_of_zeros);
+size_t get_str_size_of_operands(Fistr *operand_1, Fistr *operand_2);
+Fistr *get_larger_fistr(Fistr *fistr_1, Fistr *fistr_2);
+
 Fistr fistr_add(Fistr *addend_1, Fistr *addend_2);
 
 #endif // FISTR_H_
@@ -75,19 +78,29 @@ Fistr int_as_fistr(int num)
   return (Fistr) {.str = str, .str_size = int_length, .type = INTEGER, .sign = sign};
 }
 
-size_t remove_leading_zeros_from_fistr(Fistr *fistr)
+void remove_leading_zeros_from_fistr(Fistr *fistr)
 {
   size_t i = 0;
   while (fistr->str[i] == '0') i += 1;
-  if (fistr->str_size == i) return i;
   
   char *tmp_fistr_str = fistr->str;
-  char *new_str = (char *) malloc(sizeof(char) * (fistr->str_size-i+1));
-  memcpy(new_str, fistr->str + i, fistr->str_size-i+1);
+  char *new_str;
+  if (fistr->str_size == i) {
+    new_str = (char *) malloc(sizeof(char) * (2));
+    new_str[0] = '0';
+    new_str[1] = 0;
+  } else {
+    new_str = (char *) malloc(sizeof(char) * (fistr->str_size-i+1));
+    memcpy(new_str, fistr->str + i, fistr->str_size-i+1);
+  }
   fistr->str = new_str;
   free(tmp_fistr_str);
 
-  return i;
+  if (fistr->str_size == i) { // when all digits are 0
+    fistr->str_size = 1;
+    fistr->sign = POSITIVE;
+  }
+  else fistr->str_size -= i;
 }
 
 void add_leading_zeros_to_fistr(Fistr *fistr, size_t num_of_zeros)
@@ -100,39 +113,82 @@ void add_leading_zeros_to_fistr(Fistr *fistr, size_t num_of_zeros)
   free(tmp_fistr_str);
 }
 
-Fistr fistr_add(Fistr *addend_1, Fistr *addend_2)
+size_t get_str_size_of_operands(Fistr *operand_1, Fistr *operand_2)
 {
-  // Now I am assuming that both addend types are integers
-  // I am also assuming that both numbers are positive
   size_t str_size;
-  if (addend_1->str_size == addend_2->str_size) {
-    str_size = addend_1->str_size;
-  } else if (addend_1->str_size > addend_2->str_size) {
-    str_size = addend_1->str_size;
-    add_leading_zeros_to_fistr(addend_2, (size_t) (addend_1->str_size - addend_2->str_size));
-    addend_2->str_size += (addend_1->str_size - addend_2->str_size);
-  } else if (addend_1->str_size < addend_2->str_size) {
-    str_size = addend_2->str_size;
-    add_leading_zeros_to_fistr(addend_1, (size_t) (addend_2->str_size - addend_1->str_size));
-    addend_1->str_size += (addend_2->str_size - addend_1->str_size);
+  if (operand_1->str_size == operand_2->str_size) {
+    str_size = operand_1->str_size;
+  } else if (operand_1->str_size > operand_2->str_size) {
+    str_size = operand_1->str_size;
+    add_leading_zeros_to_fistr(operand_2, (size_t) (operand_1->str_size - operand_2->str_size));
+    operand_2->str_size += (operand_1->str_size - operand_2->str_size);
+  } else if (operand_1->str_size < operand_2->str_size) {
+    str_size = operand_2->str_size;
+    add_leading_zeros_to_fistr(operand_1, (size_t) (operand_2->str_size - operand_1->str_size));
+    operand_1->str_size += (operand_2->str_size - operand_1->str_size);
   }
+  
+  return str_size;
+}
+
+Fistr *get_larger_fistr(Fistr *fistr_1, Fistr *fistr_2)
+{
+  assert(fistr_1->str_size == fistr_2->str_size);
+  for (size_t i = 0; i < fistr_1->str_size; ++i) {
+    if (fistr_1->str[i] != fistr_2->str[i]) {
+      if (fistr_1->str[i] > fistr_2->str[i]) return fistr_1;
+      else if (fistr_1->str[i] < fistr_2->str[i]) return fistr_2;
+    }
+  }
+  return fistr_1;
+}
+
+Fistr fistr_add(Fistr *operand_1, Fistr *operand_2)
+{
+  // Now I am assuming that both operand types are integers
+  size_t str_size = get_str_size_of_operands(operand_1, operand_2);
+  Fistr_Sign sign;
+  
+  if (operand_1->sign == POSITIVE && operand_2->sign == POSITIVE) sign = POSITIVE;
+  else if (operand_1->sign == NEGATIVE && operand_2->sign == NEGATIVE) sign = NEGATIVE;
   
   char *str = (char *) malloc(sizeof(char) * (str_size + 2));
   for (size_t i = 0; i <= str_size; ++i) str[i] = '0';
   str[str_size+1] = 0;
 
-  size_t carry = 0;
-  for (size_t i = str_size - 1; i < str_size; --i) {
-    size_t sum = (addend_1->str[i] - '0') + (addend_2->str[i] - '0') + carry;
-    carry = sum / 10;
-    str[i+1] = (sum % 10) + '0';
+  if ((operand_1->sign == POSITIVE && operand_2->sign == POSITIVE) || (operand_1->sign == NEGATIVE && operand_2->sign == NEGATIVE)) {
+    size_t carry = 0;
+    for (size_t i = str_size - 1; i < str_size; --i) {
+      size_t sum = (operand_1->str[i] - '0') + (operand_2->str[i] - '0') + carry;
+      carry = sum / 10;
+      str[i+1] = (sum % 10) + '0';
+    }
+    str[0] = carry + '0';
+  } else {
+    size_t borrow = 0;
+    Fistr *larger_fistr = get_larger_fistr(operand_1, operand_2);
+    if (larger_fistr == operand_1) {
+      for (size_t i = str_size - 1; i < str_size; --i) {
+	size_t difference = (operand_1->str[i] - borrow) - operand_2->str[i];
+	if (difference <= 9) borrow = 0;
+	else borrow = 1;
+	str[i+1] = difference + (10*borrow) + '0';
+      }
+      sign = operand_1->sign;
+    } else {
+      for (size_t i = str_size - 1; i < str_size; --i) {
+	size_t difference = (operand_2->str[i] - borrow) - operand_1->str[i];
+	if (difference <= 9) borrow = 0;
+	else borrow = 1;
+	str[i+1] = difference + (10*borrow) + '0';
+      }
+      sign = operand_2->sign;
+    }
   }
-  str[0] = carry + '0';
   
-  Fistr total_sum = {.str = str, .str_size = str_size+1, .type = INTEGER, .sign = POSITIVE};
-  size_t leading_zeros = remove_leading_zeros_from_fistr(&total_sum);
-  total_sum.str_size -= leading_zeros;
-  return total_sum;
+  Fistr total = {.str = str, .str_size = str_size+1, .type = INTEGER, .sign = sign};
+  remove_leading_zeros_from_fistr(&total);
+  return total;
 }
 
 #if 0

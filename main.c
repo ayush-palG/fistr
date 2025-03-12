@@ -3,14 +3,14 @@
 
 int main(void)
 {
-  Fistr hundred = int_as_fistr(100);
-  Fistr two_three_zero = int_as_fistr(100);
+  Fistr four_hundred = int_as_fistr(400);
+  Fistr minus_one_two_three = int_as_fistr(-123);
   
-  Fistr sum = fistr_add(&hundred, &two_three_zero);
+  Fistr sum = fistr_add(&four_hundred, &minus_one_two_three);
   print_fistr(&sum);
-  
-  for (size_t i = 0; i < 20; ++i) {
-    sum = fistr_add(&sum, &two_three_zero);
+
+  for (size_t i = 0; i < 10; ++i) {
+    sum = fistr_add(&sum, &minus_one_two_three);
     print_fistr(&sum);
   }
   
