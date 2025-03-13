@@ -23,7 +23,7 @@ typedef struct {
   Fistr_Sign sign;
 } Fistr;
 
-void print_fistr(Fistr *fistr);
+void print_fistr(const Fistr *fistr);
 size_t int_len(int num);
 
 Fistr int_as_fistr(int num);
@@ -37,16 +37,18 @@ Fistr *get_larger_fistr(Fistr *fistr_1, Fistr *fistr_2);
 Fistr fistr_left_shift(Fistr *fistr, size_t operand);
 Fistr fistr_right_shift(Fistr *fistr, size_t operand);
 Fistr fistr_mult_by_st(Fistr *fistr, size_t operand);
+Fistr fistr_dup(Fistr *fistr);
 
 Fistr fistr_add(Fistr *operand_1, Fistr *operand_2);
 Fistr fistr_mult(Fistr *operand_1, Fistr *operand_2);
+Fistr fistr_div(Fistr *operand_1, Fistr *operand_2);
 
 #endif // FISTR_H_
 
 
 #ifdef FISTR_IMPLEMENTATION
 
-void print_fistr(Fistr *fistr)
+void print_fistr(const Fistr *fistr)
 {
   if (fistr->sign == NEGATIVE) printf("-");
   for (size_t i = 0; fistr->str[i] != 0; ++i) printf("%c", fistr->str[i]);
@@ -192,9 +194,9 @@ Fistr fistr_add(Fistr *operand_1, Fistr *operand_2)
     }
   }
   
-  Fistr total = {.str = str, .str_size = str_size+1, .type = INTEGER, .sign = sign};
-  remove_leading_zeros_from_fistr(&total);
-  return total;
+  Fistr result = {.str = str, .str_size = str_size+1, .type = INTEGER, .sign = sign};
+  remove_leading_zeros_from_fistr(&result);
+  return result;
 }
 
 Fistr fistr_left_shift(Fistr *fistr, size_t operand)
@@ -247,17 +249,51 @@ Fistr fistr_mult(Fistr *operand_1, Fistr *operand_2)
       || (operand_1->sign == NEGATIVE && operand_2->sign == NEGATIVE)) sign = POSITIVE;
   else sign = NEGATIVE;
 
-  Fistr total_sum = int_as_fistr(0);
+  Fistr result = int_as_fistr(0);
   for (size_t i = 0; i < operand_2->str_size; ++i) {
     Fistr sum = fistr_mult_by_st(operand_1, operand_2->str[i] - '0');
-    total_sum = fistr_add(&total_sum, &sum);
-    total_sum = fistr_left_shift(&total_sum, 1);
+    result = fistr_add(&result, &sum);
+    result = fistr_left_shift(&result, 1);
     free(sum.str);
   }
 
-  total_sum = fistr_right_shift(&total_sum, 1);
-  total_sum.sign = sign;
-  return total_sum;
+  result = fistr_right_shift(&result, 1);
+  result.sign = sign;
+  return result;
+}
+
+Fistr fistr_dup(Fistr *fistr)
+{
+  char *str = (char *) malloc(sizeof(char) * (fistr->str_size + 1));
+  for (size_t i = 0; i < fistr->str_size; ++i) str[i] = fistr->str[i];
+  str[fistr->str_size] = 0;
+
+  Fistr result = {.str = str, .str_size = fistr->str_size, .type = fistr->type, .sign = fistr->sign};
+  return result;
+}
+
+Fistr fistr_div(Fistr *operand_1, Fistr *operand_2)
+{
+  Fistr_Sign sign;
+  if ((operand_1->sign == POSITIVE && operand_2->sign == POSITIVE)
+      || (operand_1->sign == NEGATIVE && operand_2->sign == NEGATIVE)) sign = POSITIVE;
+  else sign = NEGATIVE;
+
+  Fistr dividend = fistr_dup(operand_1);
+  Fistr divisor  = fistr_dup(operand_2);
+  dividend.sign = POSITIVE;
+  divisor.sign = NEGATIVE;
+  
+  Fistr quotient = int_as_fistr(0);
+  Fistr one = int_as_fistr(1);
+  while (1) {
+    dividend = fistr_add(&dividend, &divisor);
+    if (dividend.sign == NEGATIVE) break;
+    quotient = fistr_add(&quotient, &one);
+  }
+
+  quotient.sign = sign;
+  return quotient;
 }
 
 #if 0
