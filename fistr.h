@@ -34,7 +34,12 @@ void add_leading_zeros_to_fistr(Fistr *fistr, size_t num_of_zeros);
 size_t get_str_size_of_operands(Fistr *operand_1, Fistr *operand_2);
 Fistr *get_larger_fistr(Fistr *fistr_1, Fistr *fistr_2);
 
-Fistr fistr_add(Fistr *addend_1, Fistr *addend_2);
+Fistr fistr_left_shift(Fistr *fistr, size_t operand);
+Fistr fistr_right_shift(Fistr *fistr, size_t operand);
+Fistr fistr_mult_by_st(Fistr *fistr, size_t operand);
+
+Fistr fistr_add(Fistr *operand_1, Fistr *operand_2);
+Fistr fistr_mult(Fistr *operand_1, Fistr *operand_2);
 
 #endif // FISTR_H_
 
@@ -156,7 +161,8 @@ Fistr fistr_add(Fistr *operand_1, Fistr *operand_2)
   for (size_t i = 0; i <= str_size; ++i) str[i] = '0';
   str[str_size+1] = 0;
 
-  if ((operand_1->sign == POSITIVE && operand_2->sign == POSITIVE) || (operand_1->sign == NEGATIVE && operand_2->sign == NEGATIVE)) {
+  if ((operand_1->sign == POSITIVE && operand_2->sign == POSITIVE)
+      || (operand_1->sign == NEGATIVE && operand_2->sign == NEGATIVE)) {
     size_t carry = 0;
     for (size_t i = str_size - 1; i < str_size; --i) {
       size_t sum = (operand_1->str[i] - '0') + (operand_2->str[i] - '0') + carry;
@@ -191,12 +197,70 @@ Fistr fistr_add(Fistr *operand_1, Fistr *operand_2)
   return total;
 }
 
-#if 0
-Fistr fistr_mult(Fistr *multiplicand, Fistr *multiplier)
+Fistr fistr_left_shift(Fistr *fistr, size_t operand)
 {
-  assert(0 && "fistr_mult() not implemented\n");
+  char *str = (char *) malloc(sizeof(char) * (fistr->str_size + 1 + operand));
+  memcpy(str, fistr->str, fistr->str_size);
+  for (size_t i = fistr->str_size; i < fistr->str_size + operand; ++i) str[i] = '0';
+  str[fistr->str_size+operand] = 0;
+
+  Fistr result = {.str = str, .str_size = fistr->str_size+operand, .type = fistr->type, .sign = fistr->sign};
+  remove_leading_zeros_from_fistr(&result);
+  return result;
 }
 
+Fistr fistr_right_shift(Fistr *fistr, size_t operand)
+{
+  char *str = (char *) malloc(sizeof(char) * (fistr->str_size + 1 - operand));
+  for (size_t i = 0; i < fistr->str_size - operand; ++i) str[i] = fistr->str[i];
+  str[fistr->str_size-operand] = 0;
+
+  Fistr result = {.str = str, .str_size = fistr->str_size-operand, .type = fistr->type, .sign = fistr->sign};
+  remove_leading_zeros_from_fistr(&result);
+  return result;
+}
+
+Fistr fistr_mult_by_st(Fistr *fistr, size_t operand)
+{
+  // Operand in 1-digit number as of now
+  char *str = (char *) malloc(sizeof(char) * (fistr->str_size + 2));
+  for (size_t i = 0; i <= fistr->str_size; ++i) str[i] = '0';
+  str[fistr->str_size+1] = 0;
+  
+  size_t carry = 0;
+  for (size_t i = fistr->str_size - 1; i < fistr->str_size; --i) {
+    size_t num = ((fistr->str[i] - '0') * operand) + carry;
+    carry = num / 10;
+    str[i+1] = (num % 10) + '0';
+  }
+  str[0] = (carry % 10) + '0';
+
+  Fistr result = {.str = str, .str_size = fistr->str_size+1, .type = INTEGER, .sign = POSITIVE};
+  remove_leading_zeros_from_fistr(&result);
+  return result;
+}
+
+Fistr fistr_mult(Fistr *operand_1, Fistr *operand_2)
+{
+  Fistr_Sign sign;
+  if ((operand_1->sign == POSITIVE && operand_2->sign == POSITIVE)
+      || (operand_1->sign == NEGATIVE && operand_2->sign == NEGATIVE)) sign = POSITIVE;
+  else sign = NEGATIVE;
+
+  Fistr total_sum = int_as_fistr(0);
+  for (size_t i = 0; i < operand_2->str_size; ++i) {
+    Fistr sum = fistr_mult_by_st(operand_1, operand_2->str[i] - '0');
+    total_sum = fistr_add(&total_sum, &sum);
+    total_sum = fistr_left_shift(&total_sum, 1);
+    free(sum.str);
+  }
+
+  total_sum = fistr_right_shift(&total_sum, 1);
+  total_sum.sign = sign;
+  return total_sum;
+}
+
+#if 0
 #define MANTISSA_MASK ((1LL << 42LL) - 1LL)
 
 size_t double_len(double num)
