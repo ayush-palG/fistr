@@ -91,7 +91,6 @@ void remove_leading_zeros_from_fistr(Fistr *fistr)
   size_t i = 0;
   while (fistr->str[i] == '0') i += 1;
   
-  char *tmp_fistr_str = fistr->str;
   char *new_str;
   if (fistr->str_size == i) {
     new_str = (char *) malloc(sizeof(char) * (2));
@@ -101,8 +100,8 @@ void remove_leading_zeros_from_fistr(Fistr *fistr)
     new_str = (char *) malloc(sizeof(char) * (fistr->str_size-i+1));
     memcpy(new_str, fistr->str + i, fistr->str_size-i+1);
   }
+  free(fistr->str);
   fistr->str = new_str;
-  free(tmp_fistr_str);
 
   if (fistr->str_size == i) { // when all digits are 0
     fistr->str_size = 1;
@@ -113,12 +112,11 @@ void remove_leading_zeros_from_fistr(Fistr *fistr)
 
 void add_leading_zeros_to_fistr(Fistr *fistr, size_t num_of_zeros)
 {
-  char *tmp_fistr_str = fistr->str;
   char *new_str = (char *) malloc(sizeof(char) * (fistr->str_size+1 + num_of_zeros));
   for (size_t i = 0; i < num_of_zeros; ++i) new_str[i] = '0';
   memcpy(new_str + num_of_zeros, fistr->str, fistr->str_size+1);
+  free(fistr->str);
   fistr->str = new_str;
-  free(tmp_fistr_str);
 }
 
 size_t get_str_size_of_operands(Fistr *operand_1, Fistr *operand_2)
@@ -206,9 +204,10 @@ Fistr fistr_left_shift(Fistr *fistr, size_t operand)
   memcpy(str, fistr->str, fistr->str_size);
   for (size_t i = fistr->str_size; i < fistr->str_size + operand; ++i) str[i] = '0';
   str[fistr->str_size+operand] = 0;
-
+  
   Fistr result = {.str = str, .str_size = fistr->str_size+operand, .type = fistr->type, .sign = fistr->sign};
   remove_leading_zeros_from_fistr(&result);
+  free(fistr->str);
   return result;
 }
 
@@ -220,6 +219,7 @@ Fistr fistr_right_shift(Fistr *fistr, size_t operand)
 
   Fistr result = {.str = str, .str_size = fistr->str_size-operand, .type = fistr->type, .sign = fistr->sign};
   remove_leading_zeros_from_fistr(&result);
+  free(fistr->str);
   return result;
 }
 
@@ -243,6 +243,16 @@ Fistr fistr_mult_by_st(Fistr *fistr, size_t operand)
   return result;
 }
 
+Fistr fistr_dup(Fistr *fistr)
+{
+  char *str = (char *) malloc(sizeof(char) * (fistr->str_size + 1));
+  for (size_t i = 0; i < fistr->str_size; ++i) str[i] = fistr->str[i];
+  str[fistr->str_size] = 0;
+
+  Fistr result = {.str = str, .str_size = fistr->str_size, .type = fistr->type, .sign = fistr->sign};
+  return result;
+}
+
 Fistr fistr_mult(Fistr *operand_1, Fistr *operand_2)
 {
   Fistr_Sign sign;
@@ -260,16 +270,6 @@ Fistr fistr_mult(Fistr *operand_1, Fistr *operand_2)
 
   result = fistr_right_shift(&result, 1);
   result.sign = sign;
-  return result;
-}
-
-Fistr fistr_dup(Fistr *fistr)
-{
-  char *str = (char *) malloc(sizeof(char) * (fistr->str_size + 1));
-  for (size_t i = 0; i < fistr->str_size; ++i) str[i] = fistr->str[i];
-  str[fistr->str_size] = 0;
-
-  Fistr result = {.str = str, .str_size = fistr->str_size, .type = fistr->type, .sign = fistr->sign};
   return result;
 }
 
