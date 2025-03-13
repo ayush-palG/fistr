@@ -6,3 +6,8 @@ temp
 
 # Ignore the temp files
 *~
+
+# Ignore binary files from the examples folder
+/examples/*
+!/examples/*.c
+!/examples/*.sh
