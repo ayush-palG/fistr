@@ -42,6 +42,7 @@ Fistr fistr_dup(Fistr *fistr);
 Fistr fistr_add(Fistr *operand_1, Fistr *operand_2);
 Fistr fistr_mult(Fistr *operand_1, Fistr *operand_2);
 Fistr fistr_div(Fistr *operand_1, Fistr *operand_2);
+Fistr fistr_mod(Fistr *operand_1, Fistr *operand_2);
 
 #endif // FISTR_H_
 
@@ -152,7 +153,7 @@ Fistr *get_larger_fistr(Fistr *fistr_1, Fistr *fistr_2)
 
 Fistr fistr_add(Fistr *operand_1, Fistr *operand_2)
 {
-  // Now I am assuming that both operand types are integers
+  // TODO: Now I am assuming that both operand types are integers
   size_t str_size = get_str_size_of_operands(operand_1, operand_2);
   Fistr_Sign sign;
   
@@ -224,7 +225,7 @@ Fistr fistr_right_shift(Fistr *fistr, size_t operand)
 
 Fistr fistr_mult_by_st(Fistr *fistr, size_t operand)
 {
-  // Operand in 1-digit number as of now
+  // TODO: Operand in 1-digit number as of now
   char *str = (char *) malloc(sizeof(char) * (fistr->str_size + 2));
   for (size_t i = 0; i <= fistr->str_size; ++i) str[i] = '0';
   str[fistr->str_size+1] = 0;
@@ -292,8 +293,32 @@ Fistr fistr_div(Fistr *operand_1, Fistr *operand_2)
     quotient = fistr_add(&quotient, &one);
   }
 
+  free(dividend.str);
+  free(divisor.str);
   quotient.sign = sign;
   return quotient;
+}
+
+Fistr fistr_mod(Fistr *operand_1, Fistr *operand_2)
+{
+  // dividend % divisor = (dividend - divisor * (dividend / divisor))
+  // But the above operation is more expensive than simple division we used
+  // And the sign of mod is always positive or zero
+  
+  Fistr dividend = fistr_dup(operand_1);
+  Fistr divisor  = fistr_dup(operand_2);
+  dividend.sign = POSITIVE;
+  divisor.sign = NEGATIVE;
+  
+  while (dividend.sign == POSITIVE) {
+    dividend = fistr_add(&dividend, &divisor);
+  }
+
+  divisor.sign = POSITIVE;
+  dividend = fistr_add(&dividend, &divisor);
+
+  free(divisor.str);
+  return dividend;
 }
 
 #if 0
