@@ -1,5 +1,5 @@
 #define FISTR_IMPLEMENTATION
-#include "../fistr.h"
+#include "../fistr_old.h"
 
 Fistr factorial(size_t num)
 {

@@ -3,18 +3,15 @@
 
 int main(void)
 {
-  Fistr a, b, c;
+  arena_init(&arena, 1024*1024);
+  Fistr a, b;
 
   b = int_as_fistr(1);
-  for (size_t i = 1; i <= 10; ++i) {
+  for (size_t i = 1; i <= 100; ++i) {
     a = int_as_fistr(i);
-    c = b;
-    b = fistr_mult(&b, &a);
-    print_fistr(&b);
-    free(a.str);
-    free(c.str);
+    b = fistr_mult(b, a);
+    print_fistr(b);
   }
 
-  free(b.str);
   return 0;
 }
