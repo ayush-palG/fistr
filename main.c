@@ -10,6 +10,9 @@ int main(void)
   }
 
   string_print(str);
+  string_trim_left(&str, 1);
+  string_trim_right(&str, 1);
+  string_print(str);
   
   return 0;
 }

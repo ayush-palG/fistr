@@ -13,6 +13,9 @@ typedef struct {
 String string_alloc(size_t capacity);
 void string_print(String string);
 
+void string_trim_left(String *string, size_t trim_size);
+void string_trim_right(String *string, size_t trim_size);
+
 #endif // STRING_H_
 
 
@@ -33,6 +36,22 @@ void string_print(String string)
     printf("%c", string.buffer[i]);
   }
   printf("\n");
+}
+
+void string_trim_left(String *string, size_t trim_size)
+{
+  String str = string_alloc(string->capacity - trim_size);
+  for (size_t i = trim_size; i < string->size; ++i) {
+    str.buffer[str.size++] = string->buffer[i];
+  }
+
+  free(string->buffer);
+  *string = str;
+}
+
+void string_trim_right(String *string, size_t trim_size)
+{
+  string->size -= trim_size;
 }
 
 #endif // STRING_IMPLEMENTATION
