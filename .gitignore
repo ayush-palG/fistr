@@ -1,8 +1,8 @@
 # Ignore the executable file
 fistr
 
-# Ignore the temp files
-temp
+# Ignore the files in discarded folder
+/discarded/*
 
 # Ignore the temp files
 *~
