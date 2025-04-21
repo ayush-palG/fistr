@@ -1,0 +1,9 @@
+#ifndef STRING_H_
+#define STRING_H_
+
+#endif // STRING_H_
+
+
+#ifdef STRING_IMPLEMENTATION
+
+#endif // STRING_IMPLEMENTATION
