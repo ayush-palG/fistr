@@ -13,6 +13,12 @@ int main(void)
   string_trim_left(&str, 1);
   string_trim_right(&str, 1);
   string_print(str);
+
+  String str_dup = string_dup(str);
+  string_print(str_dup);
+
+  // free(str.buffer);
+  // free(str_dup.buffer);
   
   return 0;
 }

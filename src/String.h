@@ -13,6 +13,7 @@ typedef struct {
 String string_alloc(size_t capacity);
 void string_print(String string);
 
+String string_dup(String string);
 void string_trim_left(String *string, size_t trim_size);
 void string_trim_right(String *string, size_t trim_size);
 
@@ -36,6 +37,16 @@ void string_print(String string)
     printf("%c", string.buffer[i]);
   }
   printf("\n");
+}
+
+String string_dup(String string)
+{
+  String duplicate_string = string_alloc(string.capacity);
+  for (size_t i = 0; i < string.size; ++i) {
+    duplicate_string.buffer[duplicate_string.size++] = string.buffer[i];
+  }
+  
+  return duplicate_string;
 }
 
 void string_trim_left(String *string, size_t trim_size)
