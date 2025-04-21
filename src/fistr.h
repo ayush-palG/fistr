@@ -16,6 +16,7 @@ typedef enum {
   NEGATIVE,
 } Fistr_Sign;
 
+// TODO: Introduce String structure having buffer, buffer_size and capacity as members 
 typedef struct {
   char *str;
   size_t str_size;
@@ -34,11 +35,14 @@ void add_leading_zeros_to_fistr(Fistr *fistr, size_t num_of_zeros);
 size_t get_str_size_of_operands(Fistr *operand_1, Fistr *operand_2);
 Fistr *get_larger_fistr(Fistr *fistr_1, Fistr *fistr_2);
 
+// TODO: Instead of returning Fistr return void, and give the result in the first argument
+//       If we want the first argument, then duplicate it when needed
 Fistr fistr_left_shift(Fistr *fistr, size_t operand);
 Fistr fistr_right_shift(Fistr *fistr, size_t operand);
 Fistr fistr_mult_by_st(Fistr *fistr, size_t operand);
 Fistr fistr_dup(Fistr *fistr);
 
+// TODO: Introduce fistr_sub as different function
 Fistr fistr_add(Fistr *operand_1, Fistr *operand_2);
 Fistr fistr_mult(Fistr *operand_1, Fistr *operand_2);
 Fistr fistr_div(Fistr *operand_1, Fistr *operand_2);

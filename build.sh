@@ -2,4 +2,4 @@
 
 set -xe
 
-cc -Wall -Wextra -ggdb -o fistr main.c
+cc -Wall -Wextra -ggdb -I ./src -o fistr main.c
