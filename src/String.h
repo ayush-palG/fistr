@@ -14,6 +14,8 @@ String string_alloc(size_t capacity);
 void string_capacity_inc(String *string, size_t capacity_inc);
 void string_print(String string);
 
+void string_itoa(String *string);
+void string_atoi(String *string);
 String string_dup(String string);
 void string_trim_left(String *string, size_t trim_size);
 void string_trim_right(String *string, size_t trim_size);
@@ -49,6 +51,22 @@ void string_print(String string)
     printf("%c", string.buffer[i]);
   }
   printf("\n");
+}
+
+void string_itoa(String *string)
+{
+  for (size_t i = 0; i < string->size; ++i) {
+    assert(string->buffer[i] >= 0 && string->buffer[i] <= 9);
+    string->buffer[i] += '0';
+  }
+}
+
+void string_atoi(String *string)
+{
+  for (size_t i = 0; i < string->size; ++i) {
+    assert(string->buffer[i] >= '0' && string->buffer[i] <= '9');
+    string->buffer[i] -= '0';
+  }
 }
 
 String string_dup(String string)
