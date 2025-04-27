@@ -11,6 +11,7 @@ typedef struct {
 } String;
 
 String string_alloc(size_t capacity);
+void string_capacity_inc(String *string, size_t capacity_inc);
 void string_print(String string);
 
 String string_dup(String string);
@@ -29,6 +30,17 @@ String string_alloc(size_t capacity)
     .size = 0,
     .capacity = capacity
   };
+}
+
+void string_capacity_inc(String *string, size_t capacity_inc)
+{
+  String str = string_alloc(string->capacity + capacity_inc);
+  for (size_t i = 0; i < string->size; ++i) {
+    str.buffer[str.size++] = string->buffer[i];
+  }
+
+  free(string->buffer);
+  *string = str;
 }
 
 void string_print(String string)
