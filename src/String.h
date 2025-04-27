@@ -17,6 +17,7 @@ void string_print(String string);
 void string_itoa(String *string);
 void string_atoi(String *string);
 String string_dup(String string);
+void string_reverse(String *string);
 void string_trim_left(String *string, size_t trim_size);
 void string_trim_right(String *string, size_t trim_size);
 
@@ -77,6 +78,15 @@ String string_dup(String string)
   }
   
   return duplicate_string;
+}
+
+void string_reverse(String *string)
+{
+  for (size_t i = 0; i < string->size / 2; ++i) {
+    char temp_ch = string->buffer[string->size - i - 1];
+    string->buffer[string->size - i - 1] = string->buffer[i];
+    string->buffer[i] = temp_ch;
+  }
 }
 
 void string_trim_left(String *string, size_t trim_size)
