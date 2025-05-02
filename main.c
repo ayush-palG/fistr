@@ -1,24 +1,23 @@
-#define STRING_IMPLEMENTATION
-#include "String.h"
+#define FISTR_IMPLEMENTATION
+#include "fistr.h"
 
 int main(void)
 {
-  String str = string_alloc(10);
-  
-  for (size_t i = 0; i < 5; ++i) {
-    str.buffer[str.size++] = i + 'a';
-  }
+  // TODO: Instead of giving integer as an argument, give string
+  Fistr six_nums = int_as_fistr(123456);
+  Fistr seventeen = int_as_fistr(17);
 
-  string_print(str);
-  string_trim_left(&str, 1);
-  string_trim_right(&str, 1);
-  string_print(str);
+  fistr_print(six_nums);
+  fistr_print(seventeen);
+  fistr_mod(&six_nums, &seventeen);
 
-  String str_dup = string_dup(str);
-  string_print(str_dup);
+  printf("\n");
+  fistr_print(six_nums);
+  fistr_print(seventeen);
 
-  // free(str.buffer);
-  // free(str_dup.buffer);
+  // TODO: Introduce fistr_free and string_free
+  free(six_nums.string.buffer);
+  free(seventeen.string.buffer);
   
   return 0;
 }
