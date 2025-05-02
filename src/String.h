@@ -11,12 +11,16 @@ typedef struct {
 } String;
 
 String string_alloc(size_t capacity);
+String string_from_cstr(const char *cstr);
+
 void string_capacity_inc(String *string, size_t capacity_inc);
 void string_print(String string);
 
 void string_itoa(String *string);
 void string_atoi(String *string);
+
 String string_dup(String string);
+
 void string_reverse(String *string);
 void string_trim_left(String *string, size_t trim_size);
 void string_trim_right(String *string, size_t trim_size);
@@ -33,6 +37,19 @@ String string_alloc(size_t capacity)
     .size = 0,
     .capacity = capacity
   };
+}
+
+String string_from_cstr(const char *cstr)
+{
+  size_t cstr_len = 0;
+  while (cstr[cstr_len] != '\0') cstr_len += 1;
+
+  String string = string_alloc(cstr_len);
+  for (size_t i = 0; i < cstr_len; ++i) {
+    string.buffer[string.size++] = cstr[i];
+  }
+
+  return string;
 }
 
 void string_capacity_inc(String *string, size_t capacity_inc)
