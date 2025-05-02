@@ -22,6 +22,7 @@ void string_atoi(String *string);
 String string_dup(String string);
 String string_slice(String string, size_t start, size_t end);
 
+void string_concat(String *string1, String *string2);
 void string_reverse(String *string);
 void string_trim_left(String *string, size_t trim_size);
 void string_trim_right(String *string, size_t trim_size);
@@ -107,6 +108,17 @@ String string_slice(String string, size_t start, size_t end)
     slice.buffer[slice.size++] = string.buffer[i];
   }
   return slice;
+}
+
+void string_concat(String *string1, String *string2)
+{
+  if (string1->capacity < string1->size + string2->size) {
+    string_capacity_inc(string1, string2->size);
+  }
+  
+  for (size_t i = 0; i < string2->size; ++i) {
+    string1->buffer[string1->size++] = string2->buffer[i];
+  }
 }
 
 void string_reverse(String *string)
