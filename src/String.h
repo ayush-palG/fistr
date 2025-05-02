@@ -10,6 +10,9 @@ typedef struct {
   size_t capacity;
 } String;
 
+// TODO: Introduce more string operations and functions such as to_upper, is_upper,
+//       split (to split the string into string arr according to the delimeter character) and more
+
 String string_alloc(size_t capacity);
 String string_from_cstr(const char *cstr);
 
