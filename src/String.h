@@ -20,6 +20,7 @@ void string_itoa(String *string);
 void string_atoi(String *string);
 
 String string_dup(String string);
+String string_slice(String string, size_t start, size_t end);
 
 void string_reverse(String *string);
 void string_trim_left(String *string, size_t trim_size);
@@ -95,6 +96,17 @@ String string_dup(String string)
   }
   
   return duplicate_string;
+}
+
+String string_slice(String string, size_t start, size_t end)
+{
+  assert(start <= end);
+  assert(end <= string.size);
+  String slice = string_alloc(end - start);
+  for (size_t i = start; i < end; ++i) {
+    slice.buffer[slice.size++] = string.buffer[i];
+  }
+  return slice;
 }
 
 void string_reverse(String *string)
