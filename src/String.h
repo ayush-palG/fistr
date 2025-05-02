@@ -21,6 +21,8 @@ void string_atoi(String *string);
 
 String string_dup(String string);
 String string_slice(String string, size_t start, size_t end);
+// TODO: See if we need to return String or void
+String string_rep(String string, size_t rep_count);
 
 void string_concat(String *string1, String *string2);
 void string_reverse(String *string);
@@ -108,6 +110,16 @@ String string_slice(String string, size_t start, size_t end)
     slice.buffer[slice.size++] = string.buffer[i];
   }
   return slice;
+}
+
+String string_rep(String string, size_t rep_count)
+{
+  String rep_string = string_alloc(string.size * rep_count);
+  for (size_t i = 0; i < rep_string.capacity; ++i) {
+    rep_string.buffer[rep_string.size++] = string.buffer[i%string.size];
+  }
+
+  return rep_string;
 }
 
 void string_concat(String *string1, String *string2)
