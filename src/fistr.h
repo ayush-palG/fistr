@@ -118,7 +118,7 @@ Fistr fistr_dup(Fistr fistr)
 void remove_leading_zeros_from_fistr(Fistr *fistr)
 {
   size_t i = 0;
-  while (fistr->string.buffer[i] == 0) i += 1;
+  while (i < fistr->string.size && fistr->string.buffer[i] == 0) i += 1;
   
   if (fistr->string.size == i) {
     string_trim_left(&fistr->string, i-1);
