@@ -55,6 +55,7 @@ String string_from_cstr(const char *cstr)
   for (size_t i = 0; i < cstr_len; ++i) {
     string.buffer[string.size++] = cstr[i];
   }
+  string_atoi(&string);
 
   return string;
 }
