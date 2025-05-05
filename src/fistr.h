@@ -106,6 +106,7 @@ Fistr string_as_fistr(String string, Fistr_Sign sign)
 
 Fistr fistr_dup(Fistr fistr)
 {
+  assert(fistr.string.size <= fistr.string.capacity);
   String string = string_alloc(fistr.string.capacity);
 
   for (size_t i = 0; i < fistr.string.size; ++i) {
@@ -189,19 +190,30 @@ int fistr_comp_size(Fistr fistr1, Fistr fistr2)
 
 int fistr_comp_magnitude(Fistr fistr1, Fistr fistr2)
 {
-  // If fistr1 is larger than fistr2 in magnitude then return 1 and -1 if vice-versa
-  // Return 0 if both are equal in magnitude
-  if (fistr_comp_size(fistr1, fistr2) == 0) {
-    for (size_t i = 0; i < fistr1.string.size; ++i) {
-      if (fistr1.string.buffer[i] > fistr2.string.buffer[i])      return 1;
-      else if (fistr1.string.buffer[i] < fistr2.string.buffer[i]) return -1;
-    }
-    return 0;
-  } else if (fistr_comp_size(fistr1, fistr2) > 0) {
-    return 1;
-  } else {
-    return -1;
+  Fistr fistr1_dup = fistr_dup(fistr1);
+  Fistr fistr2_dup = fistr_dup(fistr2);
+
+  if (fistr_comp_size(fistr1_dup, fistr2_dup) < 0) {
+    add_leading_zeros_to_fistr(&fistr1_dup, fistr2_dup.string.size - fistr1_dup.string.size);
+  } else if (fistr_comp_size(fistr1_dup, fistr2_dup) > 0) {
+    add_leading_zeros_to_fistr(&fistr2_dup, fistr1_dup.string.size - fistr2_dup.string.size);
   }
+
+  int result = 0;
+  for (size_t i = 0; i < fistr1_dup.string.size; ++i) {
+    if (fistr1_dup.string.buffer[i] > fistr2_dup.string.buffer[i]) {
+      result = 1;
+      break;
+    }
+    else if (fistr1_dup.string.buffer[i] < fistr2_dup.string.buffer[i]) {
+      result = -1;
+      break;
+    }
+  }
+  
+  free(fistr1_dup.string.buffer);
+  free(fistr2_dup.string.buffer);
+  return result;
 }
 
 void fistr_sum(Fistr *fistr1, Fistr *fistr2)
