@@ -106,6 +106,7 @@ Fistr string_as_fistr(String string, Fistr_Sign sign)
 
 Fistr fistr_dup(Fistr fistr)
 {
+  assert(fistr.string.size <= fistr.string.capacity);
   String string = string_alloc(fistr.string.capacity);
 
   for (size_t i = 0; i < fistr.string.size; ++i) {
@@ -118,7 +119,7 @@ Fistr fistr_dup(Fistr fistr)
 void remove_leading_zeros_from_fistr(Fistr *fistr)
 {
   size_t i = 0;
-  while (fistr->string.buffer[i] == 0) i += 1;
+  while (i < fistr->string.size && fistr->string.buffer[i] == 0) i += 1;
   
   if (fistr->string.size == i) {
     string_trim_left(&fistr->string, i-1);
@@ -189,19 +190,30 @@ int fistr_comp_size(Fistr fistr1, Fistr fistr2)
 
 int fistr_comp_magnitude(Fistr fistr1, Fistr fistr2)
 {
-  // If fistr1 is larger than fistr2 in magnitude then return 1 and -1 if vice-versa
-  // Return 0 if both are equal in magnitude
-  if (fistr_comp_size(fistr1, fistr2) == 0) {
-    for (size_t i = 0; i < fistr1.string.size; ++i) {
-      if (fistr1.string.buffer[i] > fistr2.string.buffer[i])      return 1;
-      else if (fistr1.string.buffer[i] < fistr2.string.buffer[i]) return -1;
-    }
-    return 0;
-  } else if (fistr_comp_size(fistr1, fistr2) > 0) {
-    return 1;
-  } else {
-    return -1;
+  Fistr fistr1_dup = fistr_dup(fistr1);
+  Fistr fistr2_dup = fistr_dup(fistr2);
+
+  if (fistr_comp_size(fistr1_dup, fistr2_dup) < 0) {
+    add_leading_zeros_to_fistr(&fistr1_dup, fistr2_dup.string.size - fistr1_dup.string.size);
+  } else if (fistr_comp_size(fistr1_dup, fistr2_dup) > 0) {
+    add_leading_zeros_to_fistr(&fistr2_dup, fistr1_dup.string.size - fistr2_dup.string.size);
   }
+
+  int result = 0;
+  for (size_t i = 0; i < fistr1_dup.string.size; ++i) {
+    if (fistr1_dup.string.buffer[i] > fistr2_dup.string.buffer[i]) {
+      result = 1;
+      break;
+    }
+    else if (fistr1_dup.string.buffer[i] < fistr2_dup.string.buffer[i]) {
+      result = -1;
+      break;
+    }
+  }
+  
+  free(fistr1_dup.string.buffer);
+  free(fistr2_dup.string.buffer);
+  return result;
 }
 
 void fistr_sum(Fistr *fistr1, Fistr *fistr2)
@@ -311,24 +323,24 @@ void fistr_long_division(Fistr *fistr1, Fistr *fistr2, Fistr *quotient, Fistr *r
   for (size_t i = 0; i < fistr1->string.size; ++i) {
     Fistr slice = string_as_fistr(string_slice(fistr1->string, i, i+1), POSITIVE);
     string_concat(&remainder->string, &slice.string);
-    
-    if (fistr_comp_magnitude(*fistr1, *fistr2) >= 0) {
-      for (size_t i = 10; i > 0; --i) {
-	Fistr temp = int_as_fistr(i);
-	fistr_mul(&temp, fistr2);
-	if (fistr_comp_magnitude(temp, *remainder) <= 0) {
-	  fistr_sub(remainder, &temp);
-	  quotient->string.buffer[quotient->string.size++] = i;
-	  free(temp.string.buffer);
-	  break;
-	}
+    uint8_t quotient_int = 0;
+    for (size_t i = 10; i > 0; --i) {
+      Fistr temp = int_as_fistr(i);
+      fistr_mul(&temp, fistr2);
+      if (fistr_comp_magnitude(temp, *remainder) <= 0) {
+	fistr_sub(remainder, &temp);
+	quotient_int = i;
 	free(temp.string.buffer);
+	break;
       }
-    } else {
-      quotient->string.buffer[quotient->string.size++] = 0;
+      free(temp.string.buffer);
     }
+    quotient->string.buffer[quotient->string.size++] = quotient_int;
     free(slice.string.buffer);
   }
+
+  remove_leading_zeros_from_fistr(remainder);
+  remove_leading_zeros_from_fistr(quotient);
 }
 
 void fistr_pow(Fistr *fistr1, Fistr *fistr2)
