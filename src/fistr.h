@@ -42,6 +42,7 @@ void fistr_right_shift(Fistr *fistr, size_t operand);
 // TODO: Implement fistr_swap
 void fistr_swap(Fistr *dst, Fistr *src);
 void fistr_mul_by_ten_multiple(Fistr *fistr, size_t multiple);
+bool is_fistr_zero(Fistr fistr);
 
 bool fistr_comp_sign(Fistr fistr1, Fistr fistr2);
 int fistr_comp_size(Fistr fistr1, Fistr fistr2);
@@ -174,6 +175,16 @@ void fistr_mul_by_ten_multiple(Fistr *fistr, size_t multiple)
   for (size_t i = 0; i < multiple; ++i) {
     fistr->string.buffer[fistr->string.size++] = 0;
   }
+}
+
+bool is_fistr_zero(Fistr fistr)
+{
+  Fistr fistr_duplicate = fistr_dup(fistr);
+  remove_leading_zeros_from_fistr(&fistr_duplicate);
+  bool result = false;
+  if (fistr_duplicate.string.size == 1 && fistr_duplicate.string.buffer[0] == 0) result = true;
+  free(fistr_duplicate.string.buffer);
+  return result;
 }
 
 bool fistr_comp_sign(Fistr fistr1, Fistr fistr2)
