@@ -11,6 +11,9 @@
 #define STRING_IMPLEMENTATION
 #include "String.h"
 
+// TODO: Instead of fistr type add mantissa and exponent and when the
+//       exponent part is 0, we consider the fistr as integer. The mathematical
+//       operations would be same, the only difference would be fistr_print
 typedef enum {
   INTEGER,
   FLOAT,
@@ -356,37 +359,24 @@ void fistr_long_division(Fistr *fistr1, Fistr *fistr2, Fistr *quotient, Fistr *r
 
 void fistr_pow(Fistr *fistr1, Fistr *fistr2)
 {
-  if (fistr2->sign == POSITIVE) {
-    // fistr1 ^ fistr2
-    Fistr fistr1_dup = fistr_dup(*fistr1);
-    Fistr one = int_as_fistr(1);
-    fistr_sub(fistr2, &one);
-    for (size_t i = fistr2->string.size-1; i < fistr2->string.size; --i) {
-      for (size_t j = 0; j < (size_t) fistr2->string.buffer[i]; ++j) {
-	fistr_mul(fistr1, &fistr1_dup);
-      }
-    }
-    fistr_sum(fistr2, &one);
-    free(one.string.buffer);
-    free(fistr1_dup.string.buffer);
-    remove_leading_zeros_from_fistr(fistr1);
-  } else {
-    // (1/fistr1) ^ fistr2
+  // TODO: Only valid for positive exponents
+  assert(fistr2->sign == POSITIVE);
+
+  Fistr fistr1_dup = fistr_dup(*fistr1);
+  Fistr fistr2_dup = fistr_dup(*fistr2);
+  Fistr one = int_as_fistr(1);
+  fistr1->string.size = 1;
+  fistr1->string.buffer[0] = 1;
+  
+  while (is_fistr_zero(fistr2_dup) == false) {
+    fistr_mul(fistr1, &fistr1_dup);
+    fistr_sub(&fistr2_dup, &one);
   }
+  
+  free(one.string.buffer);
+  free(fistr1_dup.string.buffer);
+  free(fistr2_dup.string.buffer);
+  remove_leading_zeros_from_fistr(fistr1);
 }
-
-#if 0
-#define MANTISSA_MASK ((1LL << 42LL) - 1LL)
-
-size_t double_len(double num)
-{
-  assert(0 && "double_len() not implemented\n");
-}
-
-Fistr double_as_fistr(double num)
-{
-  assert(0 && "double_as_fistr() not implemented\n");
-}
-#endif
 
 #endif // FISTR_IMPLEMENTATION

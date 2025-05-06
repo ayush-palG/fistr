@@ -4,20 +4,20 @@
 int main(void)
 {
   // TODO: Instead of giving integer as an argument, give string
-  Fistr six_nums = int_as_fistr(123456);
-  Fistr seventeen = int_as_fistr(17);
+  Fistr two = int_as_fistr(2);
+  Fistr thousand = int_as_fistr(1000);
 
-  fistr_print(six_nums);
-  fistr_print(seventeen);
-  fistr_mod(&six_nums, &seventeen);
+  fistr_print(two);
+  fistr_print(thousand);
+  fistr_pow(&two, &thousand);
 
   printf("\n");
-  fistr_print(six_nums);
-  fistr_print(seventeen);
+  fistr_print(two);
+  fistr_print(thousand);
 
   // TODO: Introduce fistr_free and string_free
-  free(six_nums.string.buffer);
-  free(seventeen.string.buffer);
+  free(two.string.buffer);
+  free(thousand.string.buffer);
   
   return 0;
 }
